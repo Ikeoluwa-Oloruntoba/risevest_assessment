@@ -4,30 +4,29 @@ import { PrismaUserRepository } from 'src/prisma-repositories/user.repo';
 import { PrismaUserTokenRepository } from 'src/prisma-repositories/usertokens.repo';
 import { AuthHelper } from 'src/helpers/auth.helper';
 import { loginUserDto } from './dto/loginUser.dto';
+import { AuthController } from './auth.controller';
+import { DtoValidator } from 'src/helpers/dtoValidator.helper';
+import { mockDeep } from 'jest-mock-extended';
 
 // Define a mock type for Repository
 export type MockType<T> = {
   [P in keyof T]?: jest.Mock<{}>;
 };
 
-// Define a mock factory function for PrismaUserRepository
-const repositoryMockFactory: () => MockType<PrismaUserRepository> = jest.fn(() => ({
-  findUserByAny: jest.fn(),
-  getPassword: jest.fn(),
-  // Add other methods as needed
-}));
-
-// Define a mock factory function for PrismaUserTokenRepository
-const tokenRepositoryMockFactory: () => MockType<PrismaUserTokenRepository> = jest.fn(() => ({
-  revokeUserAccessToken: jest.fn(),
-}));
-
-// Define a mock factory function for AuthHelper
-const authHelperMockFactory: () => MockType<AuthHelper> = jest.fn(() => ({
-  comparePasswords: jest.fn(),
-  checkStatus: jest.fn(),
-  generateUserToken: jest.fn(),
-}));
+const mockUserRepo = {
+    findUserByAny: jest.fn(),
+    getPassword: jest.fn(),
+  };
+  
+  const mockUserTokenRepo = {
+    revokeUserAccessToken: jest.fn(),
+  };
+  
+  const mockAuthHelper = {
+    comparePasswords: jest.fn(),
+    checkStatus: jest.fn(),
+    generateUserToken: jest.fn(),
+  };
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -37,14 +36,24 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        { provide: PrismaUserRepository, useFactory: repositoryMockFactory },
-        { provide: PrismaUserTokenRepository, useFactory: tokenRepositoryMockFactory },
-        { provide: AuthHelper, useFactory: authHelperMockFactory },
-      ],
-    }).compile();
-
+        controllers: [AuthController],
+        providers: [
+          AuthService,
+          {
+            provide: PrismaUserRepository,
+            useValue: mockDeep<PrismaUserRepository>(),
+          },
+          {
+            provide: PrismaUserTokenRepository,
+            useValue: mockDeep<PrismaUserTokenRepository>(),
+          },
+          {
+            provide: AuthHelper,
+            useValue: mockDeep<AuthHelper>(),
+          },
+        
+        ],
+      }).compile();
     service = module.get<AuthService>(AuthService);
     userRepositoryMock = module.get(PrismaUserRepository);
     tokenRepositoryMock = module.get(PrismaUserTokenRepository);
