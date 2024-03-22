@@ -135,7 +135,7 @@ export class PrismaUserRepository implements UserInterface {
     }
     //Private Functions
 
-    async throwExceptionIfUserNotFound(user: User | null): Promise<void> {
+    async throwExceptionIfUserNotFound(user: SafeUser | null): Promise<void> {
         if (!user) {
           throw new BadRequestException('Account Does Not Exist');
         }

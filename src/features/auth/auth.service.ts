@@ -17,6 +17,7 @@ export class AuthService {
         const { email, password } = data;
     
         const findUser = await this.userRepo.findUserByAny(email);
+        await this.userRepo.throwExceptionIfUserNotFound(findUser);
         const user_password = await this.userRepo.getPassword(findUser.email);
     
     
